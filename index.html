@@ -1,123 +1,202 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BlueSkyLT — Career Profile</title>
-    <style>
-      :root {
-        color-scheme: light;
-        --bg: #f8fafc;
-        --text: #0f172a;
-        --card: #ffffff;
-        --accent: #2563eb;
-        --muted: #475569;
-      }
 
-      * {
-        box-sizing: border-box;
-      }
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="Tian Lan (蓝天) — Personal Homepage / CV" />
+    <meta name="author" content="Tian Lan (蓝天)" />
+    <title id="title"></title>
 
-      body {
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        line-height: 1.6;
-        color: var(--text);
-        background: var(--bg);
-      }
+    <!-- Icon -->
+    <link rel="icon" type="image/x-icon" href="static/assets/favicon.ico" />
 
-      main {
-        max-width: 860px;
-        margin: 0 auto;
-        padding: 2rem 1rem 4rem;
-      }
+    <!-- Bootstrap icons-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
 
-      .card {
-        background: var(--card);
-        border-radius: 12px;
-        box-shadow: 0 3px 12px rgba(15, 23, 42, 0.08);
-        padding: 1.25rem 1.5rem;
-        margin-bottom: 1rem;
-      }
+    <!-- Google fonts-->
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,600;1,600&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,300;0,500;0,600;0,700;1,300;1,500;1,600;1,700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,400;1,400&amp;display=swap"
+        rel="stylesheet" />
 
-      h1,
-      h2 {
-        margin: 0 0 0.75rem;
-        line-height: 1.3;
-      }
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link type="text/css" href="static/css/styles.css" rel="stylesheet" />
+    <link type="text/css" href="static/css/main.css" rel="stylesheet" />
 
-      h1 {
-        font-size: 2rem;
-      }
+    <!-- Bootstrap core JS-->
+    <script type="text/javascript" src="static/js/bootstrap.bundle.min.js"></script>
 
-      h2 {
-        font-size: 1.2rem;
-        color: var(--accent);
-      }
+    <!-- For Compatability -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 
-      ul {
-        margin: 0;
-        padding-left: 1.25rem;
-      }
+    <!-- Markdown -->
+    <script type="text/javascript" src="static/js/marked.min.js"></script>
 
-      p {
-        margin: 0.25rem 0;
-      }
+    <!-- Mathematics -->
+    <script>
+        // See https://docs.mathjax.org/en/latest/index.html for more details.
+        MathJax = {
+            tex: {
+                packages: {},              // extensions to use
+                inlineMath: [              // start/end delimiter pairs for in-line math
+                    ['$', '$'],
+                    ['\\(', '\\)']
+                ],
+                displayMath: [             // start/end delimiter pairs for display math
+                    ['$$', '$$'],
+                    ['\\[', '\\]']
+                ],
+                processEscapes: false,      // use \$ to produce a literal dollar sign
+                processEnvironments: true, // process \begin{xxx}...\end{xxx} outside math mode
+                processRefs: true,         // process \ref{...} outside of math mode
+                digits: /^(?:[0-9]+(?:\{,\}[0-9]{3})*(?:\.[0-9]*)?|\.[0-9]+)/,    // pattern for recognizing numbers
+                tags: 'all',              // or 'ams' or 'all'
+                tagSide: 'right',          // side for \tag macros
+                tagIndent: '0.8em',        // amount to indent tags
+                useLabelIds: true,         // use label name rather than tag for ids
+                maxMacros: 10000,          // maximum number of macro substitutions per expression
+                maxBuffer: 5 * 1024,       // maximum size for the internal TeX string (5K)
+                formatError:               // function called when TeX syntax errors occur
+                    (jax, err) => jax.formatError(err)
+            }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script"
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
-      .muted {
-        color: var(--muted);
-      }
+    <!-- Core JS-->
+    <script type="text/javascript" src="static/js/scripts.js"></script>
+    <script type="text/javascript" src="static/js/js-yaml.min.js"></script>
 
-      a {
-        color: var(--accent);
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <section class="card">
-        <h1>BlueSkyLT</h1>
-        <p class="muted">Career profile / CV website</p>
-        <p>
-          Welcome! This GitHub Pages site is my professional profile for career and job hunting,
-          based on content from my <strong>career-ops-iris</strong> materials.
-        </p>
-      </section>
+</head>
 
-      <section class="card">
-        <h2>Summary</h2>
-        <p>
-          I build practical software and automation solutions with a focus on reliability,
-          maintainability, and measurable outcomes.
-        </p>
-      </section>
+<body id="page-top">
+    <!-- Navigation-->
+    <nav class="header navbar navbar-expand-lg navbar-light fixed-top shadow-sm" id="mainNav">
+        <div class="container px-5">
+            <a id="page-top-title" class="navbar-brand fw-bold" href="#page-top"></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+                MENU
+                <i class="bi-list"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav ms-auto me-4 my-3 my-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link me-lg-3" href="#home">HOME 主页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link me-lg-3" href="#awards">AWARDS 荣誉</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link me-lg-3" href="#experience">EXPERIENCE 经历</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link me-lg-3" href="#publications">PUBLICATIONS 论文</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link me-lg-3" href="#skills">SKILLS 技能</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-      <section class="card">
-        <h2>Experience Highlights</h2>
-        <ul>
-          <li>Designed and delivered software solutions end-to-end.</li>
-          <li>Improved workflows with automation and clear operational practices.</li>
-          <li>Collaborated across technical and non-technical stakeholders.</li>
-        </ul>
-      </section>
+    <!-- Top Section -->
+    <section class="top-section" style="background-image: url('static/assets/img/background.jpeg');">
+        <div class="top-section-content">
+            <div class="container px-5">
+                <h2 id="top-section-bg-text" class="text-white display-3 lh-1 font-alt"></h2>
+            </div>
+        </div>
+    </section>
+    <!-- Top Section -->
 
-      <section class="card">
-        <h2>Skills</h2>
-        <p>Software Engineering · Automation · Cloud/GitHub Workflows · Problem Solving</p>
-      </section>
+    <!-- Photo -->
+    <div class="container px-5">
+        <div id="avatar">
+            <img class="shadow" src="static/assets/img/photo.png">
+        </div>
+    </div>
+    <!-- Photo -->
 
-      <section class="card">
-        <h2>Projects &amp; Portfolio</h2>
-        <p>
-          See my work on
-          <a href="https://github.com/BlueSkyLT" rel="noopener noreferrer">GitHub</a>.
-        </p>
-      </section>
+    <!-- Home -->
+    <section class="bg-gradient-primary-to-secondary-light mt5 md5" id="home">
+        <div class="container px-5">
+            <header>
+                <h2 id="home-subtitle"> </h2>
+            </header>
+            <div class="main-body" id="home-md"></div>
+        </div>
+    </section>
+    <!-- Home -->
 
-      <section class="card">
-        <h2>Contact</h2>
-        <p>Open to career opportunities and professional collaboration.</p>
-      </section>
-    </main>
-  </body>
+    <!-- Awards -->
+    <section class="bg-gradient-primary-to-secondary-light mt5 md5" id="awards">
+        <div class="container px-5">
+            <header>
+                <h2 id="awards-subtitle"><i class="bi bi-award-fill"></i>&nbsp;AWARDS 荣誉奖项</h2>
+            </header>
+            <div class="main-body" id="awards-md"></div>
+
+        </div>
+    </section>
+    <!-- Awards -->
+
+    <!-- Experience -->
+    <section class="bg-gradient-primary-to-secondary-dark mt5 md5" id="experience">
+        <div class="container px-5">
+            <header>
+                <h2 id="experience-subtitle"><i class="bi bi-briefcase-fill"></i>&nbsp;EXPERIENCE 工作与研究经历</h2>
+            </header>
+            <div class="main-body" id="experience-md"></div>
+        </div>
+    </section>
+    <!-- Experience -->
+
+    <!-- Publications -->
+    <section class="bg-gradient-primary-to-secondary-gray mt5 md5" id="publications">
+        <div class="container px-5">
+            <header>
+                <h2 id="publications-subtitle"><i class="bi bi-file-text-fill"></i>&nbsp;PUBLICATIONS 论文发表</h2>
+            </header>
+            <div class="main-body" id="publications-md"></div>
+
+        </div>
+    </section>
+    <!-- Publications  -->
+
+    <!-- Skills -->
+    <section class="bg-gradient-primary-to-secondary-light mt5 md5" id="skills">
+        <div class="container px-5">
+            <header>
+                <h2 id="skills-subtitle"><i class="bi bi-gear-fill"></i>&nbsp;SKILLS 技能</h2>
+            </header>
+            <div class="main-body" id="skills-md"></div>
+        </div>
+    </section>
+    <!-- Skills -->
+
+    <!-- Footer-->
+    <footer class="bg-bottom text-center py-5">
+        <div class="container px-5">
+            <div class="text-white-50 small">
+                <div id="copyright-text" class="mb-2"></div>
+                <a id="github-link" href="https://github.com/BlueSkyLT">Github</a>
+                <span class="mx-1">&middot;</span>
+                <a id="license-link"
+                    href="https://github.com/BlueSkyLT/BlueSkyLT.github.io/blob/main/LICENSE">License</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
 </html>

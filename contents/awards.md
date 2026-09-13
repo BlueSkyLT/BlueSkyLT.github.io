@@ -1,0 +1,3 @@
+- **Shanghai Super Postdoctoral Incentive Program** (上海市超级博士后激励计划), Shanghai Municipal Government.
+
+- **Shanghai Magnolia Talent Program — Young Talent Track** (上海市白玉兰人才计划青年项目), Shanghai Municipal Government.
