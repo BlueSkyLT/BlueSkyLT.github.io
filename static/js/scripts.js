@@ -1,6 +1,7 @@
 const content_dir = 'contents/'
-const config_file = 'config.yml'
-const section_names = ['home', 'awards', 'experience', 'publications', 'skills'];
+const section_names = ['home', 'education', 'experience', 'projects', 'awards', 'publications', 'skills'];
+const site_lang = document.documentElement.getAttribute('data-lang') || 'en';
+const config_file = 'config.' + site_lang + '.yml';
 
 
 window.addEventListener('DOMContentLoaded', event => {
@@ -48,7 +49,7 @@ window.addEventListener('DOMContentLoaded', event => {
     // Marked
     marked.use({ mangle: false, headerIds: false })
     section_names.forEach((name, idx) => {
-        fetch(content_dir + name + '.md')
+        fetch(content_dir + site_lang + '/' + name + '.md')
             .then(response => response.text())
             .then(markdown => {
                 const html = marked.parse(markdown);
