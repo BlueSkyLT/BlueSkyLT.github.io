@@ -1,0 +1,246 @@
+@import "./styles.css";
+
+
+:root{
+    --h-title-color:#3948d2;
+}
+
+.header {
+    border-bottom: solid 2px var(--bs-blue);
+    z-index: 10000;
+}
+
+.bg-bottom {
+    background-color: var(--h-title-color);
+}
+
+.top-section {
+    position: relative;
+    padding: 10rem 0;
+    background-position: center;
+    background-size: cover;
+    height: 25rem;
+}
+
+.top-section h2 {
+    font-weight: 400;
+}
+
+.top-section .top-section-content {
+    position: relative;
+    z-index: 1;
+}
+
+.top-section:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+section header h2{
+    font-family: "Kanit", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
+    color: var(--h-title-color);
+    font-size: 2.3rem;
+    line-height: 4rem;
+}
+
+section .main-body{
+    font-size: 1.3rem;
+    font-weight: 200;
+    line-height: 2.4rem;
+}
+
+
+.bg-gradient-primary-to-secondary-light {
+    background: linear-gradient(45deg, #fcfcfc, #ffffff) !important;
+}
+
+.bg-gradient-primary-to-secondary-gray {
+    background: linear-gradient(45deg, #f0f0f0, #f1f1f1) !important;
+}
+
+
+
+.on-top {
+    position: relative;
+    z-index: 10000;
+}
+
+.top-bg {
+    background-position: center;
+    background-size: fill;
+    width: 100%;
+    height: 100%;
+}
+
+.top-bg::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+
+#avatar {
+    position: relative;
+    height: 0;
+    top:min(-65px,max(-100px,calc(-1*100vw/12)));
+    max-width: 55em;
+    margin: 0 1.5rem 0 0;
+    float: right;
+    z-index: 9000;
+}
+
+#avatar img {
+    height: max(130px,min(200px,calc(100vw/6)));
+    box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+}
+
+@media screen and (max-width: 991px) {
+    #avatar {
+        margin: 0;
+    }
+}
+
+/* Language switch (top right corner of the nav) */
+.lang-switch {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-weight: 700;
+}
+
+.lang-switch a {
+    text-decoration: none;
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: inherit;
+}
+
+.lang-switch a.active {
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--h-title-color);
+}
+
+.lang-switch .lang-sep {
+    color: var(--bs-gray-500, #adb5bd);
+}
+
+/* Institution brand colors, inspired by each school's official palette */
+.inst-ntu {
+    --accent: #181C62; /* NTU Blue */
+    --accent2: #D71440; /* NTU Red */
+}
+
+.inst-cu {
+    --accent: #1D4F91; /* Columbia Primary Blue */
+    --accent2: #B9D9EB; /* Columbia Blue */
+}
+
+.inst-uiuc {
+    --accent: #13294B; /* Illini Blue */
+    --accent2: #FF5F05; /* Illini Orange */
+}
+
+.inst-sysu {
+    --accent: #006600; /* SYSU Green */
+    --accent2: #731618; /* SYSU Red */
+}
+
+.inst-other {
+    --accent: #495057;
+    --accent2: #868e96;
+}
+
+/* Entry cards used for Education / Experience / Projects sections */
+.cv-entry {
+    border-left: 4px solid var(--accent, #495057);
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 4px;
+    padding: 0.75rem 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.entry-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.6rem;
+    margin-bottom: 0.25rem;
+    line-height: 1.3;
+}
+
+.inst-logo {
+    height: 1.6rem;
+    width: auto;
+    max-width: 8rem;
+    object-fit: contain;
+    vertical-align: middle;
+}
+
+.entry-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--accent, inherit);
+}
+
+.entry-affil {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--accent, inherit);
+}
+
+.entry-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 1px 7px;
+    border-radius: 3px;
+    background: var(--accent2, #868e96);
+    color: #fff;
+}
+
+.entry-period {
+    margin-left: auto;
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+.entry-role {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+}
+
+.entry-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0.35rem 0;
+}
+
+.entry-tags .tag {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 2px 9px;
+    border-radius: 3px;
+    background: var(--accent, #495057);
+    color: #fff;
+}
+
+.entry-desc {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-top: 0.3rem;
+}
+
+

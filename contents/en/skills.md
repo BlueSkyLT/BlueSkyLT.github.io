@@ -1,0 +1,5 @@
+- **Programming:** Python (NumPy, Pandas, PyTorch, Scikit-learn), C++, Linux, Git, LaTeX
+- **Data Engineering:** web scraping, ETL pipelines, dataset construction, standardization, data visualization
+- **Machine Learning:** Graph Neural Networks, time-series forecasting, anomaly detection, feature engineering, image segmentation, uncertainty quantification / conformal prediction
+- **LLM applications / agents:** ACP (stdio agent protocol); MCP tool servers; custom agent skills, personas, and workflows; Telegram agent UX; human-in-the-loop tool use; multi-provider model endpoints; Ollama for local small-model experiments
+- **Languages:** English, Chinese (Mandarin, Cantonese, Hakka)
