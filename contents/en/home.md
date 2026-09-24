@@ -1,5 +1,5 @@
-[![GitHub](https://img.shields.io/badge/GitHub-BlueSkyLT-blue?logo=github)](https://github.com/BlueSkyLT)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-tian--lan-blue?logo=linkedin)](https://www.linkedin.com/in/tian-lan-82b21a132)
+[![GitHub](https://img.shields.io/badge/GitHub-BlueSkyLT-181C62?logo=github)](https://github.com/BlueSkyLT)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-tian--lan-181C62?logo=linkedin)](https://www.linkedin.com/in/tian-lan-82b21a132)
 
 I'm a PhD-level applied ML researcher and data scientist based in **Singapore**, with extensive experience
 architecting scalable data mining and predictive modeling pipelines across complex multimodal physical and
