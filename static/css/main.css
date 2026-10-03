@@ -397,7 +397,7 @@ section .main-body code {
 
 /* Support-network visualization between Home and Education */
 .network-section {
-    background: #0D0E10;
+    background: #0d1033;
     padding: 0;
     margin: 0;
 }
@@ -407,7 +407,7 @@ section .main-body code {
     width: 100%;
     height: min(62vh, 34rem);
     border: 0;
-    background: #0D0E10;
+    background: #0d1033;
 }
 
 @media screen and (max-width: 576px) {

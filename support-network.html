@@ -2,12 +2,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>No man is an island</title>
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@600;700&display=swap" rel="stylesheet">
 <style>
   html, body {
     margin: 0;
     height: 100%;
-    background: #0D0E10;
-    color: #ECEDEF;
+    background: #0d1033;
+    color: #e8eef5;
     font-family: system-ui, sans-serif;
     text-align: center;
     display: flex;
@@ -19,11 +21,14 @@
     width: 100%;
     flex: 1 1 auto;
     min-height: 220px;
+    background: #0d1033;
   }
   h3 {
     margin: 0.55rem 0 0.15rem;
-    font-weight: 600;
+    font-family: Alegreya, Georgia, serif;
+    font-weight: 700;
     letter-spacing: 0.02em;
+    color: #B9D9EB;
   }
   .ctl {
     display: flex;
@@ -32,8 +37,13 @@
     justify-content: center;
     font: 12px ui-monospace, monospace;
     padding: 8px 12px 16px;
+    color: #B9D9EB;
   }
-  input { width: 220px; touch-action: none; }
+  input[type=range] {
+    width: 220px;
+    touch-action: none;
+    accent-color: #B9D9EB;
+  }
   output {
     min-width: 90px;
     text-align: left;
@@ -63,10 +73,13 @@ var canvas = document.getElementById("c");
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
 camera.position.z = 4.2;
-var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
-scene.add(new THREE.AmbientLight(0xffffff, 0.75));
-var key = new THREE.PointLight(0xffffff, 0.9, 40, 1.6);
+var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+renderer.setClearColor(0x0d1033, 1);
+scene.add(new THREE.AmbientLight(0xB9D9EB, 0.55));
+var key = new THREE.PointLight(0xe8eef5, 0.9, 40, 1.6);
 key.position.set(-1, 1.5, 3); scene.add(key);
+var fill = new THREE.PointLight(0x1D4F91, 0.5, 40, 1.8);
+fill.position.set(1.4, -0.8, 2.2); scene.add(fill);
 
 // ---------- the model ----------
 // One person in the middle, a room of people around her. Meeting someone adds
@@ -119,52 +132,181 @@ function simulate(count) {
   return { known: known, mood: m, edges: edges };
 }
 
-// ---------- drawing ----------
-var net = new THREE.Group(); scene.add(net);
-var dotGeo = new THREE.SphereGeometry(1, 16, 12), dots = [], dotMats = [];
-for (i = 0; i < N; i++) {
-  var mm = new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0.1 });
-  var mesh = new THREE.Mesh(dotGeo, mm);
-  mesh.position.copy(pos[i]); net.add(mesh); dots.push(mesh); dotMats.push(mm);
+// ---------- bodies: stars, moons, planets (some with rings) ----------
+function crateredGeo(seed) {
+  var geo = new THREE.SphereGeometry(1, 18, 14);
+  var attr = geo.attributes.position, r = rng(seed);
+  for (var v = 0; v < attr.count; v++) {
+    var x = attr.getX(v), y = attr.getY(v), z = attr.getZ(v);
+    var len = Math.sqrt(x * x + y * y + z * z) || 1;
+    var dent = 1 - Math.pow(r(), 4) * 0.22;
+    attr.setXYZ(v, (x / len) * dent, (y / len) * dent, (z / len) * dent);
+  }
+  geo.computeVertexNormals();
+  return geo;
 }
+
+function bandTexture(hexA, hexB, seed) {
+  var c = document.createElement("canvas");
+  c.width = 64; c.height = 64;
+  var ctx = c.getContext("2d"), r = rng(seed);
+  function css(hex) {
+    return "#" + ("000000" + hex.toString(16)).slice(-6);
+  }
+  for (var y = 0; y < 64; ) {
+    var h = 1 + (r() * 4 | 0);
+    ctx.fillStyle = r() > 0.42 ? css(hexA) : css(hexB);
+    ctx.fillRect(0, y, 64, h);
+    y += h;
+  }
+  var tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+function stdMat(tint, extra) {
+  var m = new THREE.MeshStandardMaterial({
+    color: tint, emissive: tint, emissiveIntensity: 0.2,
+    roughness: 0.5, metalness: 0.12
+  });
+  if (extra) Object.keys(extra).forEach(function(k){ m[k] = extra[k]; });
+  return m;
+}
+
+function makeStar(tint) {
+  var g = new THREE.Group();
+  var core = stdMat(tint, { roughness: 0.22, metalness: 0, emissiveIntensity: 1.15 });
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(0.42, 16, 12), core));
+  var spike = new THREE.MeshBasicMaterial({
+    color: tint, transparent: true, opacity: 0.88, depthWrite: false
+  });
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.07, 0.07), spike));
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.07, 2.8, 0.07), spike));
+  g.add(new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 2.8), spike));
+  return { group: g, mats: [core, spike], glowMul: 1.25 };
+}
+
+function makeMoon(tint, seed) {
+  var g = new THREE.Group();
+  var mat = stdMat(tint, { roughness: 0.94, metalness: 0.02, emissiveIntensity: 0.12 });
+  g.add(new THREE.Mesh(crateredGeo(seed), mat));
+  g.rotation.set((rnd() - 0.5) * 0.8, 0, (rnd() - 0.5) * 0.8);
+  return { group: g, mats: [mat], glowMul: 0.45 };
+}
+
+function makePlanet(tint, seed, ringed) {
+  var g = new THREE.Group();
+  var extra = { roughness: 0.48, metalness: 0.16, emissiveIntensity: 0.28 };
+  if (ringed || rnd() > 0.55) extra.map = bandTexture(tint, 0xB9D9EB, seed);
+  var mat = stdMat(tint, extra);
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(1, 24, 18), mat));
+  var mats = [mat];
+  var atmo = new THREE.MeshBasicMaterial({
+    color: 0xB9D9EB, transparent: true, opacity: 0.14, side: THREE.BackSide, depthWrite: false
+  });
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(1.08, 20, 16), atmo));
+  mats.push(atmo);
+  if (ringed) {
+    var ringMat = stdMat(0xB9D9EB, {
+      roughness: 0.62, metalness: 0.08, emissiveIntensity: 0.22,
+      side: THREE.DoubleSide, transparent: true, opacity: 0.78
+    });
+    var ring = new THREE.Mesh(new THREE.RingGeometry(1.35, 2.1, 48), ringMat);
+    ring.rotation.x = Math.PI / 2.2;
+    g.add(ring);
+    mats.push(ringMat);
+  }
+  g.rotation.set((rnd() - 0.5) * 0.5, 0, (rnd() - 0.5) * 0.6);
+  return { group: g, mats: mats, glowMul: 0.7 };
+}
+
+var STAR_TINTS = [0xFFFFFF, 0xe8eef5, 0xB9D9EB];
+var PLANET_TINTS = [0x181C62, 0x1D4F91, 0x5d86aa, 0xB9D9EB];
+var MOON_TINTS = [0x7a8494, 0x8a92a8, 0x5c6b7a];
+
+var net = new THREE.Group(); scene.add(net);
+var bodies = [], br = rng(44117);
+for (i = 0; i < N; i++) {
+  var kind, tint, built, scale;
+  if (i === ME) {
+    built = makeStar(0xFFFFFF);
+    scale = 0.070;
+  } else {
+    var roll = br();
+    if (roll < 0.26) {
+      tint = STAR_TINTS[(br() * STAR_TINTS.length) | 0];
+      built = makeStar(tint);
+      scale = 0.018 + br() * 0.012;
+    } else if (roll < 0.52) {
+      tint = MOON_TINTS[(br() * MOON_TINTS.length) | 0];
+      built = makeMoon(tint, (br() * 1e9) | 0);
+      scale = 0.026 + br() * 0.014;
+    } else if (roll < 0.82) {
+      tint = PLANET_TINTS[(br() * PLANET_TINTS.length) | 0];
+      built = makePlanet(tint, (br() * 1e9) | 0, false);
+      scale = 0.034 + br() * 0.016;
+    } else {
+      tint = PLANET_TINTS[(br() * PLANET_TINTS.length) | 0];
+      built = makePlanet(tint, (br() * 1e9) | 0, true);
+      scale = 0.036 + br() * 0.014;
+    }
+  }
+  built.group.position.copy(pos[i]);
+  built.tint = built.mats[0].color.clone();
+  built.scale = scale;
+  built.spin = (br() - 0.5) * 0.35;
+  net.add(built.group);
+  bodies.push(built);
+}
+
 var MAXE = N * 12, lineGeo = new THREE.BufferGeometry();
 var lp = new Float32Array(MAXE * 6), lc = new Float32Array(MAXE * 6);
 lineGeo.setAttribute("position", new THREE.BufferAttribute(lp, 3));
 lineGeo.setAttribute("color", new THREE.BufferAttribute(lc, 3));
-net.add(new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.85 })));
+net.add(new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.72 })));
 
-// Four mood tiers. One colour per tier, shared by the dots and the word under the slider.
 var TIERS = isZh ? [
-  { word: "疲惫",    hex: 0x4A2E8C, css: "#8B6BD1", glow: 0.35, size: 0.020 },
-  { word: "撑着",    hex: 0x8E6BD6, css: "#A78BE0", glow: 0.55, size: 0.026 },
-  { word: "轻松些",  hex: 0xB49CEB, css: "#C6B2F0", glow: 0.70, size: 0.031 },
-  { word: "明亮",    hex: 0xFFFFFF, css: "#F6F0FF", glow: 1.10, size: 0.036 }
+  { word: "疲惫",    hex: 0x181C62, css: "#8A92D0", glow: 0.35 },
+  { word: "撑着",    hex: 0x1D4F91, css: "#7BA3D4", glow: 0.60 },
+  { word: "轻松些",  hex: 0xB9D9EB, css: "#B9D9EB", glow: 0.90 },
+  { word: "明亮",    hex: 0xFFFFFF, css: "#F4F7FF", glow: 1.30 }
 ] : [
-  { word: "drained",    hex: 0x4A2E8C, css: "#8B6BD1", glow: 0.35, size: 0.020 },
-  { word: "getting by", hex: 0x8E6BD6, css: "#A78BE0", glow: 0.55, size: 0.026 },
-  { word: "lighter",    hex: 0xB49CEB, css: "#C6B2F0", glow: 0.70, size: 0.031 },
-  { word: "bright",     hex: 0xFFFFFF, css: "#F6F0FF", glow: 1.10, size: 0.036 }
+  { word: "drained",    hex: 0x181C62, css: "#8A92D0", glow: 0.35 },
+  { word: "getting by", hex: 0x1D4F91, css: "#7BA3D4", glow: 0.60 },
+  { word: "lighter",    hex: 0xB9D9EB, css: "#B9D9EB", glow: 0.90 },
+  { word: "bright",     hex: 0xFFFFFF, css: "#F4F7FF", glow: 1.30 }
 ];
 function tier(mood) { return mood < 0.3 ? 0 : mood < 0.55 ? 1 : mood < 0.8 ? 2 : 3; }
 var TIER_COLORS = TIERS.map(function(t){ return new THREE.Color(t.hex); });
-var STRANGER = new THREE.Color(0x2A3140), TIE_LOW = new THREE.Color(0x2C3A57), TIE_HIGH = new THREE.Color(0x7A6AA8), cc = new THREE.Color();
+var STRANGER = new THREE.Color(0x1a2258), TIE_LOW = new THREE.Color(0x1D4F91), TIE_HIGH = new THREE.Color(0xB9D9EB), cc = new THREE.Color(), tmp = new THREE.Color();
 
 function paint(res) {
   for (var n = 0; n < N; n++) {
-    var mat = dotMats[n];
-    if (!res.known[n]) {                         // not met yet: a small dim dot
-      mat.color.copy(STRANGER); mat.emissive.copy(STRANGER); mat.emissiveIntensity = 0.25;
-      dots[n].scale.setScalar(0.013); continue;
+    var b = bodies[n], known = res.known[n], tr = TIERS[tier(res.mood[n])];
+    var glow = known ? tr.glow * b.glowMul : 0.10 * b.glowMul;
+    if (!known) tmp.copy(STRANGER).lerp(b.tint, 0.28);
+    else tmp.copy(b.tint).lerp(TIER_COLORS[tier(res.mood[n])], 0.28);
+    for (var mi = 0; mi < b.mats.length; mi++) {
+      var mat = b.mats[mi];
+      if (mat.emissive) {
+        mat.color.copy(tmp);
+        mat.emissive.copy(tmp);
+        mat.emissiveIntensity = glow;
+      } else {
+        mat.color.copy(tmp);
+      }
+      if (mat.transparent && mat.opacity !== undefined && mi === 1 && b.glowMul > 1) {
+        mat.opacity = known ? 0.45 + glow * 0.35 : 0.12;
+      }
     }
-    var tr = TIERS[tier(res.mood[n])], col = TIER_COLORS[tier(res.mood[n])];
-    mat.color.copy(col).multiplyScalar(0.55); mat.emissive.copy(col); mat.emissiveIntensity = tr.glow;
-    dots[n].scale.setScalar(n === ME ? 0.052 : tr.size);
+    b.group.scale.setScalar(b.scale * (known ? 1 : 0.78));
   }
   for (var q = 0; q < res.edges.length; q++) {
-    var a = res.edges[q][0], b = res.edges[q][1];
-    lp.set([pos[a].x,pos[a].y,pos[a].z,pos[b].x,pos[b].y,pos[b].z], q*6);
-    cc.copy(TIE_LOW).lerp(TIE_HIGH, Math.min(tier(res.mood[a]), tier(res.mood[b])) / 3);
-    lc.set([cc.r,cc.g,cc.b,cc.r,cc.g,cc.b], q*6);
+    var a = res.edges[q][0], b2 = res.edges[q][1];
+    lp.set([pos[a].x, pos[a].y, pos[a].z, pos[b2].x, pos[b2].y, pos[b2].z], q * 6);
+    cc.copy(TIE_LOW).lerp(TIE_HIGH, Math.min(tier(res.mood[a]), tier(res.mood[b2])) / 3);
+    lc.set([cc.r, cc.g, cc.b, cc.r, cc.g, cc.b], q * 6);
   }
   lineGeo.setDrawRange(0, res.edges.length * 2);
   lineGeo.attributes.position.needsUpdate = true;
@@ -190,7 +332,8 @@ window.addEventListener("resize", fit); fit();
 var t0 = performance.now();
 (function frame(now) {
   var t = (now - t0) / 1000;
-  net.rotation.y = t * 0.16; net.rotation.x = Math.sin(t * 0.21) * 0.14;   // slow drift
+  net.rotation.y = t * 0.16; net.rotation.x = Math.sin(t * 0.21) * 0.14;
+  for (var n = 0; n < N; n++) bodies[n].group.rotation.y += bodies[n].spin * 0.016;
   renderer.render(scene, camera); requestAnimationFrame(frame);
 })(t0);
 </script>
