@@ -1,0 +1,196 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>No man is an island</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #0D0E10;
+    color: #ECEDEF;
+    font-family: system-ui, sans-serif;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 220px;
+  }
+  h3 {
+    margin: 0.55rem 0 0.15rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .ctl {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    font: 12px ui-monospace, monospace;
+    padding: 8px 12px 16px;
+  }
+  input { width: 220px; touch-action: none; }
+  output {
+    min-width: 90px;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    font-weight: 700;
+  }
+</style>
+<canvas id="c"></canvas>
+<h3>No man is an island</h3>
+<div class="ctl">
+  <label for="friends">Connections</label>
+  <input type="range" id="friends" min="0" max="40" value="20" step="1">
+  <output id="verdict"></output>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+var isZh = /(?:^|[?&])lang=zh(?:&|$)/.test(location.search);
+if (isZh) {
+  document.title = "人不是孤岛";
+  document.querySelector("h3").textContent = "人不是孤岛";
+  document.querySelector("label[for=friends]").textContent = "连接";
+}
+
+// ---------- three.js setup ----------
+var canvas = document.getElementById("c");
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+camera.position.z = 4.2;
+var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+var key = new THREE.PointLight(0xffffff, 0.9, 40, 1.6);
+key.position.set(-1, 1.5, 3); scene.add(key);
+
+// ---------- the model ----------
+// One person in the middle, a room of people around her. Meeting someone adds
+// a tie to her and up to two ties to friends already met. Everyone has a
+// baseline mood. Support from neighbours lifts it with diminishing returns,
+// and a lifted friend gives more back. Iterate until it settles.
+var N = 46, ME = 0, BETA = 0.20, GAMMA = 0.10, ROUNDS = 40;
+function rng(seed){ return function(){ seed = (seed*1664525+1013904223) % 4294967296; return seed/4294967296; }; }
+var rnd = rng(20260907), pos = [new THREE.Vector3(0,0,0)], base = [0.12], i, j, k;
+for (i = 1; i < N; i++) {                       // points on a squashed ball, none too close to the middle
+  var u = rnd()*2-1, th = rnd()*Math.PI*2, r = 0.34 + 0.66*Math.pow(rnd(), 0.55);
+  var sq = Math.sqrt(1-u*u);
+  pos.push(new THREE.Vector3(r*sq*Math.cos(th)*1.28, r*u*0.86, r*sq*Math.sin(th)*1.28));
+  base.push(0.32 + 0.36*rnd());                 // strangers start in a middling mood, she starts low
+}
+var order = []; for (i = 1; i < N; i++) order.push(i);   // the fixed order in which people are met
+var sr = rng(99137);
+for (i = order.length-1; i > 0; i--){ var q = Math.floor(sr()*(i+1)), t = order[i]; order[i] = order[q]; order[q] = t; }
+
+function simulate(count) {
+  var known = new Array(N), adj = [], m = base.slice(), edges = [];
+  for (i = 0; i < N; i++) { known[i] = false; adj.push([]); }
+  known[ME] = true;
+  var met = order.slice(0, count);
+  for (i = 0; i < met.length; i++) known[met[i]] = true;
+  function tie(a, b) {
+    if (adj[a].indexOf(b) >= 0) return;
+    adj[a].push(b); adj[b].push(a); edges.push([a, b]);
+  }
+  for (i = 0; i < met.length; i++) {
+    var f = met[i]; tie(ME, f);
+    var d = [];                                  // each friend also supports the two friends nearest to them
+    for (j = 0; j < met.length; j++) if (met[j] !== f) d.push([pos[f].distanceToSquared(pos[met[j]]), met[j]]);
+    d.sort(function(a,b){ return a[0]-b[0]; });
+    for (k = 0; k < 2 && k < d.length; k++) tie(f, d[k][1]);
+  }
+  for (var rd = 0; rd < ROUNDS; rd++) {
+    var next = m.slice();
+    // warmth of the whole circle: the bigger and happier the group, the more everyone in it gets back
+    var sum = 0; for (j = 0; j < met.length; j++) sum += m[met[j]];
+    var warmth = met.length ? (sum / met.length) * Math.pow(met.length, 1.3) : 0;
+    for (i = 0; i < N; i++) {
+      if (!known[i]) continue;
+      var got = GAMMA * warmth;
+      for (j = 0; j < adj[i].length; j++) got += m[adj[i][j]];
+      next[i] = base[i] + (1 - base[i]) * (1 - Math.exp(-BETA * got));   // saturating lift toward 1
+    }
+    m = next;
+  }
+  return { known: known, mood: m, edges: edges };
+}
+
+// ---------- drawing ----------
+var net = new THREE.Group(); scene.add(net);
+var dotGeo = new THREE.SphereGeometry(1, 16, 12), dots = [], dotMats = [];
+for (i = 0; i < N; i++) {
+  var mm = new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0.1 });
+  var mesh = new THREE.Mesh(dotGeo, mm);
+  mesh.position.copy(pos[i]); net.add(mesh); dots.push(mesh); dotMats.push(mm);
+}
+var MAXE = N * 12, lineGeo = new THREE.BufferGeometry();
+var lp = new Float32Array(MAXE * 6), lc = new Float32Array(MAXE * 6);
+lineGeo.setAttribute("position", new THREE.BufferAttribute(lp, 3));
+lineGeo.setAttribute("color", new THREE.BufferAttribute(lc, 3));
+net.add(new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.85 })));
+
+// Four mood tiers. One colour per tier, shared by the dots and the word under the slider.
+var TIERS = isZh ? [
+  { word: "疲惫",    hex: 0x4A2E8C, css: "#8B6BD1", glow: 0.35, size: 0.020 },
+  { word: "撑着",    hex: 0x8E6BD6, css: "#A78BE0", glow: 0.55, size: 0.026 },
+  { word: "轻松些",  hex: 0xB49CEB, css: "#C6B2F0", glow: 0.70, size: 0.031 },
+  { word: "明亮",    hex: 0xFFFFFF, css: "#F6F0FF", glow: 1.10, size: 0.036 }
+] : [
+  { word: "drained",    hex: 0x4A2E8C, css: "#8B6BD1", glow: 0.35, size: 0.020 },
+  { word: "getting by", hex: 0x8E6BD6, css: "#A78BE0", glow: 0.55, size: 0.026 },
+  { word: "lighter",    hex: 0xB49CEB, css: "#C6B2F0", glow: 0.70, size: 0.031 },
+  { word: "bright",     hex: 0xFFFFFF, css: "#F6F0FF", glow: 1.10, size: 0.036 }
+];
+function tier(mood) { return mood < 0.3 ? 0 : mood < 0.55 ? 1 : mood < 0.8 ? 2 : 3; }
+var TIER_COLORS = TIERS.map(function(t){ return new THREE.Color(t.hex); });
+var STRANGER = new THREE.Color(0x2A3140), TIE_LOW = new THREE.Color(0x2C3A57), TIE_HIGH = new THREE.Color(0x7A6AA8), cc = new THREE.Color();
+
+function paint(res) {
+  for (var n = 0; n < N; n++) {
+    var mat = dotMats[n];
+    if (!res.known[n]) {                         // not met yet: a small dim dot
+      mat.color.copy(STRANGER); mat.emissive.copy(STRANGER); mat.emissiveIntensity = 0.25;
+      dots[n].scale.setScalar(0.013); continue;
+    }
+    var tr = TIERS[tier(res.mood[n])], col = TIER_COLORS[tier(res.mood[n])];
+    mat.color.copy(col).multiplyScalar(0.55); mat.emissive.copy(col); mat.emissiveIntensity = tr.glow;
+    dots[n].scale.setScalar(n === ME ? 0.052 : tr.size);
+  }
+  for (var q = 0; q < res.edges.length; q++) {
+    var a = res.edges[q][0], b = res.edges[q][1];
+    lp.set([pos[a].x,pos[a].y,pos[a].z,pos[b].x,pos[b].y,pos[b].z], q*6);
+    cc.copy(TIE_LOW).lerp(TIE_HIGH, Math.min(tier(res.mood[a]), tier(res.mood[b])) / 3);
+    lc.set([cc.r,cc.g,cc.b,cc.r,cc.g,cc.b], q*6);
+  }
+  lineGeo.setDrawRange(0, res.edges.length * 2);
+  lineGeo.attributes.position.needsUpdate = true;
+  lineGeo.attributes.color.needsUpdate = true;
+}
+
+var slider = document.getElementById("friends"), verdict = document.getElementById("verdict");
+function run(count) {
+  var res = simulate(count); paint(res);
+  var tr = TIERS[tier(res.mood[ME])];
+  verdict.textContent = tr.word; verdict.style.color = tr.css;
+}
+slider.addEventListener("input", function(){ run(+slider.value); });
+run(+slider.value);
+
+// ---------- frame loop ----------
+function fit() {
+  var w = canvas.clientWidth, h = canvas.clientHeight;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+window.addEventListener("resize", fit); fit();
+var t0 = performance.now();
+(function frame(now) {
+  var t = (now - t0) / 1000;
+  net.rotation.y = t * 0.16; net.rotation.x = Math.sin(t * 0.21) * 0.14;   // slow drift
+  renderer.render(scene, camera); requestAnimationFrame(frame);
+})(t0);
+</script>
