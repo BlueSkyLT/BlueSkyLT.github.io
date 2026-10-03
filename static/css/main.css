@@ -394,3 +394,24 @@ section .main-body code {
     color: #ffffff;
     text-decoration: underline;
 }
+
+/* Support-network visualization between Home and Education */
+.network-section {
+    background: #0D0E10;
+    padding: 0;
+    margin: 0;
+}
+
+.network-section iframe {
+    display: block;
+    width: 100%;
+    height: min(62vh, 34rem);
+    border: 0;
+    background: #0D0E10;
+}
+
+@media screen and (max-width: 576px) {
+    .network-section iframe {
+        height: min(70vh, 28rem);
+    }
+}

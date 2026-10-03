@@ -1,4 +1,3 @@
-[![GitHub](https://img.shields.io/badge/GitHub-BlueSkyLT-181C62?logo=github)](https://github.com/BlueSkyLT)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-tian--lan-181C62?logo=linkedin)](https://www.linkedin.com/in/tian-lan-82b21a132)
 
 I'm a PhD-level applied ML researcher and data scientist based in **Singapore**, with extensive experience
@@ -12,9 +11,8 @@ cross-cultural experience working in multi-culture teams.
 
 #### Contact
 
-<code>tian.lan@ntu.edu.sg</code>
+<code>iris.lan.tian@outlook.com</code>
 
-**GitHub:** [github.com/BlueSkyLT](https://github.com/BlueSkyLT)
 **LinkedIn:** [linkedin.com/in/tian-lan-82b21a132](https://www.linkedin.com/in/tian-lan-82b21a132)
 
 #### Research Interests
